@@ -33,7 +33,7 @@ using namespace cimg_library;
 
 //types
 typedef unsigned char Taccess;
-typedef float  Tdata;
+typedef double  Tdata;
 
 int main(int argc,char **argv)
 {
