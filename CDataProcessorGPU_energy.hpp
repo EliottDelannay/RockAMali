@@ -80,6 +80,7 @@ public:
     Read_Paramaters(alpha);
     program=make_opencl_program(this->ctx);
     kernel_loaded=false;
+    ///paramaters of trapezoidal and discri.
   }//constructor
 
   //! compution kernel for an iteration (compution=copy, here)
@@ -100,6 +101,23 @@ public:
     uint_ workSize=this->device_vector_in.size();
     this->queue.enqueue_1d_range_kernel(ocl_kernel,0,workSize,tpb);
   };//kernelGPU
+
+  //! compution kernel for an iteration
+  virtual void kernel(CImg<Tdata> &in,CImg<Tproc> &out)
+  {
+    /// discri computation on GPU
+    //copy CPU to GPU
+    compute::copy(in.begin(), in.end(), this->device_vector_in.begin(), this->queue);
+    //compute
+    kernelGPU(this->device_vector_in,this->device_vector_out);
+    //copy GPU to CPU
+    compute::copy(this->device_vector_out.begin(), this->device_vector_out.end(), out.begin(), this->queue);
+    ///Trapezoidal computation on CPU
+    //wait for completion
+    this->queue.finish();
+    ///find trigger on CPU
+    /// energy computation on CPU
+  };//kernel
 
 };//CDataProcessorGPU_discri_opencl
 

@@ -42,11 +42,11 @@ variables:
 
 //trapezoid filter
   int trapezoid;
-    trapezoid:long_name="trapezoid filter (activated if >0)";
-    trapezoid:k_long_name= "increase size";
+    trapezoid:long_name="trapezoid filter and simple discriminator (activated if >0)";
+    trapezoid:k_long_name= "increase size for trapezoid";
     trapezoid:k= 200;
     trapezoid:k_units= "pixel";
-    trapezoid:m_long_name= "plateau size";
+    trapezoid:m_long_name= "plateau size for trapezoid";
     trapezoid:m= 50;
     trapezoid:m_units= "pixel";
     trapezoid:alpha_long_name= "";

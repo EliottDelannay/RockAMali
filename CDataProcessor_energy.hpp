@@ -5,6 +5,25 @@
 
 #ifdef DO_NETCDF
 
+
+  //! calculation of the energy based on the formula (peak-base)/number
+  template<typename Tproc>
+  float Calculation_Energy(CImg<Tproc> trapeze, int Ti,int number, double qDelay)
+  {
+    //sum of the n baseline value
+    int base=0;
+    cimg_for_inX(trapeze,Ti-number, Ti,i) base+=trapeze(i);
+    //sum of the n peak value
+    int peak=0;
+    cimg_for_inX(trapeze,Ti+qDelay, Ti+qDelay+number,i) peak+=trapeze(i);
+    //print both sum and return the energy 
+    std::cout<<"base="<<base/n<<std::endl;
+    std::cout<<"peak="<<peak/n<<std::endl;
+    return (peak-base)/number;
+  }//Calculation_Energy
+
+
+
 //! process a single peak from PAC signal 
 /**
  * Calculation of a trapezoidal based on the signal input
@@ -168,7 +187,20 @@ std::cout<<__FILE__<<"::"<<__func__<<"(...)"<<std::endl;
   #endif // #if cimg_display
 
   //!fill the image with 2 discri and display it, return the position of the trigger
-  virtual int Calcul_Ti(CImg<Tdata> e, int Tpeak,int th, double frac,double alp) 
+  virtual int Calcul_Ti(CImg<Tdata> s, int th) 
+  {
+	//find the position of the trigger
+	int Ti;
+	for (int i=0;s(i) < th; i++)
+	{
+	  Ti=i+1;
+	}
+
+	return Ti;
+  }//Calcul_Ti
+
+  //!fill the image with 2 discri and display it, return the position of the trigger
+  virtual int Calcul_Discri(CImg<Tdata> e, int Tpeak,int th, double frac,double alp) 
   {
 	CImg<Tproc> s(e.width());
 	int delay = (3*Tpeak)/2;
@@ -179,13 +211,16 @@ std::cout<<__FILE__<<"::"<<__func__<<"(...)"<<std::endl;
 	CImg<Tproc> imageDCF(s.width(),1,1,1, 0);
 	cimg_for_inX(imageDCF,delay,s.width(),n) imageDCF(n)=s(n-delay)-frac*s(n);
 	//find the position of the trigger
-	int Ti;
-	for (int i=0;s(i) < th; i++)
-	{
-	  Ti=i+1;
-	}
-        #if cimg_display!=0
-	//display the graph
+	Calcul_Ti(s,th);
+	return Ti;
+	return s;
+	return imageDCF;
+  }//Calcul_Ti
+
+  #if cimg_display!=0
+  //!display 2 discri
+  virtual int Discri_Display(CImg<Tdata> e, CImg<Tdata> s,CImg<Tdata> dcf,int th) 
+  {     
 	CImg<Tproc> imageC;
 	imageC.assign(s.width(),1,1,5, 0);
 	imageC.get_shared_channel(0)+=s;
@@ -193,25 +228,10 @@ std::cout<<__FILE__<<"::"<<__func__<<"(...)"<<std::endl;
 	imageC.get_shared_channel(2)+=th;
 	imageC.get_shared_channel(3)+=e/e.max()*imageDCF.max();
 	cimg_for_inX(imageC,Ti,imageC.width(),i) imageC(i,0,0,4)=imageDCF.max();		
-	imageC.display_graph("red = discri simple, green = dCFD, blue = threshold, yellow = signal");
-	#endif //#cimg_display
-	return Ti;
-  }//Calcul_Ti
+	imageC.display_graph("red = discri simple, green = dCFD, blue = threshold, yellow = signal");	
+  }//Discri_Display
+  #endif //#cimg_display
 
-  //! calculation of the energy based on the formula (peak-base)/number
-  float Calculation_Energy(CImg<Tproc> trapeze, int Ti,int number, double qDelay)
-  {
-    //sum of the n baseline value
-    int base=0;
-    cimg_for_inX(trapeze,Ti-number, Ti,i) base+=trapeze(i);
-    //sum of the n peak value
-    int peak=0;
-    cimg_for_inX(trapeze,Ti+qDelay, Ti+qDelay+number,i) peak+=trapeze(i);
-    //print both sum and return the energy 
-    std::cout<<"base="<<base/n<<std::endl;
-    std::cout<<"peak="<<peak/n<<std::endl;
-    return (peak-base)/number;
-  }//Calculation_Energy
   #if cimg_display!=0
   //! display the filter in details (signal, baseline, delay and flat top)
   void Display_Trapeze_Paramaters(CImg<Tdata> in, int Ti,int number, double qDelay)
