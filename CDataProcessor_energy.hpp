@@ -5,75 +5,12 @@
 
 #ifdef DO_NETCDF
 
-
-
-  template<typename Tproc>
-  //!fill the image with 2 discri and display it, return the position of the trigger
-  int Calcul_Ti(CImg<Tproc> s, Tproc th) 
-  {
-	//find the position of the trigger
-	int Ti=0;
-	for (int i=0;s(i) < th; i++)
-	{
-	  Ti=i+1;
-	}
-	return Ti;
-  }//Calcul_Ti
-
-  template<typename Tproc>
-  //! calculation of the energy based on the formula (peak-base)/number
-  float Calculation_Energy(CImg<Tproc> trapeze, int Ti,int number, double qDelay)
-  {
-    //sum of the n baseline value
-    int base=0;
-    cimg_for_inX(trapeze,Ti-number, Ti,i) base+=trapeze(i);
-    //sum of the n peak value
-    int peak=0;
-    cimg_for_inX(trapeze,Ti+qDelay, Ti+qDelay+number,i) peak+=trapeze(i);
-    //print both sum and return the energy 
-    std::cout<<"base="<<base/number<<std::endl;
-    std::cout<<"peak="<<peak/number<<std::endl;
-    return (peak-base)/number;
-  }//Calculation_Energy
-
-//! process a single peak from PAC signal 
-/**
- * Calculation of a trapezoidal based on the signal input
- * Display a graph with 3 curves (signal input, trapezoidal filter normalize and the max when the computation begin)
- *
- * Create a discri simple and a discri threshold, find and return the position of the trigger
- * Display a graph with 4 curves ( discri simple, dCFD, threshold and the signal)
- *
- * Display a graph with 4 curves (Filter, N baseline, Q delay, N flat top)
- * Make the sum of baseline and peak to calculate the energy ((peak-base)/n) then return it
- *
- * Parameters NetCDF CDL : 
- * - k= increase size
- * - m= plateau size
- * - B= Baseline
- * - n= N baseline
- * - q= Computing Delay
- * - Tm= peak time
- * - threshold= should be 36.8 % of the amplitude
- * - alpha=duty cicle
- * - fraction=
- *
- * \ref pageSchema "Signal schema" 
- *
-**/
-template<typename Tdata, typename Tproc=Tdata, typename Taccess=unsigned char>
-class CDataProcessor_Trapeze : public CDataProcessor_kernel<Tdata,Tproc, Taccess>
-{
-public:
-  int k, m, B, n, q, Tm;
-  Tproc threshold;
-  float alpha, fraction; 
-  //! read processing parameters from CDL parameter file (as .nc)
-  int Read_Paramaters (int &ks, int &ms, int &base, int &number, int &qDelay, int &Tpeak, Tproc &th, float &alp, float &frac)
+//! read processing parameters from CDL parameter file (as .nc)
+  int Read_Filters_Paramaters (int &ks, int &ms, int &number, int &qDelay, int &Tpeak, float &th, float &alp, float &frac)
   {
   ///file name
   std::string fi="parameters.nc";//=cimg_option("-p","parameters.nc","comment");
-  double Alpha, Fraction;
+  double Alpha, Fraction, Threshold;
   ///parameter class
   CParameterNetCDF fp;
   //open file
@@ -123,11 +60,11 @@ public:
   std::cout<<"  "<<attribute_name<<"="<<qDelay<<std::endl;
   //threshold
   attribute_name="threshold";
-  if (error = fp.loadAttribute(attribute_name,th)!=0){
+  if (error = fp.loadAttribute(attribute_name,Threshold)!=0){
     std::cerr<< "Error while loading "<<process_name<<":"<<attribute_name<<" attribute"<<std::endl;
     return error;
   }
-  std::cout<<"  "<<attribute_name<<"="<<th<<std::endl;
+  std::cout<<"  "<<attribute_name<<"="<<Threshold<<std::endl;
   ///fraction
   attribute_name="fraction";
   if (error = fp.loadAttribute(attribute_name,Fraction)!=0){
@@ -143,22 +80,72 @@ public:
   }
   std::cout<<"  "<<attribute_name<<"="<<Tpeak<<std::endl;
 
-  process_name="graph";
-  //load process variable
-  error=fp.loadVar(process,&process_name);
-  if(error){std::cerr<<"loadVar return "<< error <<std::endl;return error;}
-  std::cout<<process_name<<"="<<process<<std::endl;
-  ///B
-  attribute_name="B";
-  if (error = fp.loadAttribute(attribute_name,base)!=0){
-    std::cerr<< "Error while loading "<<process_name<<":"<<attribute_name<<" attribute"<<std::endl;
-    return error;
-  }
-  std::cout<<"  "<<attribute_name<<"="<<base<<std::endl;
   alp=Alpha;
   frac=Fraction;
-  
+  th=Threshold;
   }//Read_Paramaters
+
+//  template<typename T>
+  //!fill the image with 2 discri and display it, return the position of the trigger
+  int Calcul_Ti(CImg<float> s, float th) 
+  {
+	//find the position of the trigger
+	int Ti=0;
+	for (int i=0;s(i) < th; i++)
+	{
+	  Ti=i+1;
+	}
+	return Ti;
+  }//Calcul_Ti
+
+//  template<typename T>
+  //! calculation of the energy based on the formula (peak-base)/number
+  float Calculation_Energy(CImg<float> trapeze, int Ti,int number, double qDelay)
+  {
+    //sum of the n baseline value
+    int base=0;
+    cimg_for_inX(trapeze,Ti-number, Ti,i) base+=trapeze(i);
+    //sum of the n peak value
+    int peak=0;
+    cimg_for_inX(trapeze,Ti+qDelay, Ti+qDelay+number,i) peak+=trapeze(i);
+    //print both sum and return the energy 
+    std::cout<<"base="<<base/number<<std::endl;
+    std::cout<<"peak="<<peak/number<<std::endl;
+    return (peak-base)/number;
+  }//Calculation_Energy
+
+//! process a single peak from PAC signal 
+/**
+ * Calculation of a trapezoidal based on the signal input
+ * Display a graph with 3 curves (signal input, trapezoidal filter normalize and the max when the computation begin)
+ *
+ * Create a discri simple and a discri threshold, find and return the position of the trigger
+ * Display a graph with 4 curves ( discri simple, dCFD, threshold and the signal)
+ *
+ * Display a graph with 4 curves (Filter, N baseline, Q delay, N flat top)
+ * Make the sum of baseline and peak to calculate the energy ((peak-base)/n) then return it
+ *
+ * Parameters NetCDF CDL : 
+ * - k= increase size
+ * - m= plateau size
+ * - B= Baseline
+ * - n= N baseline
+ * - q= Computing Delay
+ * - Tm= peak time
+ * - threshold= should be 36.8 % of the amplitude
+ * - alpha=duty cicle
+ * - fraction=
+ *
+ * \ref pageSchema "Signal schema" 
+ *
+**/
+template<typename Tdata, typename Tproc=Tdata, typename Taccess=unsigned char>
+class CDataProcessor_Trapeze : public CDataProcessor_kernel<Tdata,Tproc, Taccess>
+{
+public:
+  int k, m, n, q, Tm, decalage;
+  float/*Tproc*/ threshold;
+  float alpha, fraction; 
 
   CDataProcessor_Trapeze(std::vector<omp_lock_t*> &lock
   , CDataAccess::ACCESS_STATUS_OR_STATE wait_status=CDataAccess::STATUS_FILLED
@@ -172,7 +159,8 @@ public:
     this->debug=true;
     this->class_name="CDataProcessor_Trapeze";
     std::cout<<__FILE__<<"::"<<__func__<<"(...)"<<std::endl;
-    Read_Paramaters(k,m,B,n,q,Tm,threshold, alpha,fraction);
+    Read_Filters_Paramaters(k,m,n,q,Tm,threshold, alpha,fraction);
+    decalage= 2*k+m+2;
     this->image.assign(1);//content: E only
     this->check_locks(lock);
   }//constructor
@@ -250,9 +238,8 @@ public:
   //! compution kernel for an iteration
   virtual void kernelCPU_Trapeze(CImg<Tdata> &in,CImg<Tproc> &out)
   {    
-    int decalage = 2*k+m+2;
 //! \todo [low] trapzoid container should be assigned once only
-    CImg<Tproc> trapeze(in.width(),1,1,1, B);
+    CImg<Tproc> trapeze(in.width(),1,1,1, in(0));
     trapezoidal_filter(in,trapeze, k,m,alpha, decalage);
     #if cimg_display!=0
     Display(in, trapeze, decalage);

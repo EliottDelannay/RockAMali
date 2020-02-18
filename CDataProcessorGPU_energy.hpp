@@ -31,38 +31,15 @@ compute::program make_opencl_program(const compute::context& context)
 }//make_opencl_program
 
 public:
+  //openCL
   bool kernel_loaded;
-  float alpha;
   compute::program program;
   compute::kernel  ocl_kernel;
+  //NetCDL
+  int k, m, n, q, Tm, decalage;
+  float/*Tproc*/ threshold;
+  float alpha, fraction; 
 
-  int Read_Paramaters (float &alp)
-  {
-  ///file name
-  std::string fi="parameters.nc";//=cimg_option("-p","parameters.nc","comment");
-  double Alpha;
-  ///parameter class
-  CParameterNetCDF fp;
-  //open file
-  int error=fp.loadFile((char *)fi.c_str());
-  if(error){std::cerr<<"loadFile return "<< error <<std::endl;return error;}
-
-  float process; 
-  std::string process_name="trapezoid";
-  //load process variable
-  error=fp.loadVar(process,&process_name);
-  if(error){std::cerr<<"loadVar return "<< error <<std::endl;return error;}
-  std::cout<<process_name<<"="<<process<<std::endl;
-  ///alpha
-  std::string attribute_name="alpha";
-  if (error = fp.loadAttribute(attribute_name,Alpha)!=0){
-    std::cerr<< "Error while loading "<<process_name<<":"<<attribute_name<<" attribute"<<std::endl;
-    return error;
-  }
-  std::cout<<"  "<<attribute_name<<"="<<Alpha<<std::endl;
-  alp=Alpha;
-  
-  }//Read_Paramaters*/
   CDataProcessorGPU_discri_opencl(std::vector<omp_lock_t*> &lock
   , compute::device device, int VECTOR_SIZE
   , CDataAccess::ACCESS_STATUS_OR_STATE wait_status=CDataAccess::STATUS_FILLED
@@ -76,11 +53,11 @@ public:
     this->debug=true;
     this->class_name="CDataProcessorGPU_discri_opencl";
     this->check_locks(lock);
-    //OpenCL framework
-    Read_Paramaters(alpha);
+    ///read paramaters in NetCDF file
+    Read_Filters_Paramaters(k,m,n,q,Tm,threshold, alpha,fraction);
+    ///OpenCL framework
     program=make_opencl_program(this->ctx);
     kernel_loaded=false;
-    ///paramaters of trapezoidal and discri.
   }//constructor
 
   //! compution kernel for an iteration (compution=copy, here)
@@ -187,8 +164,7 @@ public:
     this->debug=true;
     this->class_name="CDataProcessorGPU_discri_opencl_int2";
     this->check_locks(lock);
-    //OpenCL framework
-    this->Read_Paramaters(this->alpha);
+    //OpenCL frameworkS
     this->program=make_opencl_program(this->ctx);
     this->kernel_loaded=false;
     in2._width=out2._width=VECTOR_SIZE/2;
@@ -308,7 +284,6 @@ public:
     this->class_name="CDataProcessorGPU_discri_opencl_int4";
     this->check_locks(lock);
     //OpenCL framework
-    this->Read_Paramaters(this->alpha);
     this->program=make_opencl_program(this->ctx);
     this->kernel_loaded=false;
     in4._width=out4._width=VECTOR_SIZE/4;
