@@ -98,9 +98,8 @@
 					+e(n-(2*ks+ms+1))-alp*e(n-(2*ks+ms+2));		
   }//trapezoidal_filter
 
-
-  template<typename T>
   //!fill the image with 2 discri and display it, return the position of the trigger
+  template<typename T>
   int Calcul_Ti(CImg<T> s, float th) 
   {
 	//find the position of the trigger
@@ -112,9 +111,10 @@
 	return Ti;
   }//Calcul_Ti
 
-//  template<typename T>
+  
   //! calculation of the energy based on the formula (peak-base)/number
-  float Calculation_Energy(CImg<float> trapeze, int Ti,int number, double qDelay)
+  template<typename T>
+  float Calculation_Energy(CImg<T> trapeze, int Ti,int number, double qDelay)
   {
     //sum of the n baseline value
     int base=0;
@@ -158,8 +158,9 @@ class CDataProcessor_Trapeze : public CDataProcessor_kernel<Tdata,Tproc, Taccess
 {
 public:
   int k, m, n, q, Tm, decalage;
-  float/*Tproc*/ threshold;
+  float /*Tproc*/ threshold;
   float alpha, fraction; 
+  CImg<Tproc> s,imageDCF, trapeze;
 
   CDataProcessor_Trapeze(std::vector<omp_lock_t*> &lock
   , CDataAccess::ACCESS_STATUS_OR_STATE wait_status=CDataAccess::STATUS_FILLED
@@ -211,7 +212,6 @@ public:
   //!display 2 discri
   virtual int Discri_Display(CImg<Tdata> e, CImg<Tproc> s,CImg<Tproc> imageDCF,int Tpeak,Tproc th, int Ti, double frac,double alp) 
   {
-//	Calcul_Discri(e,s,imageDCF, Tpeak,th, frac,alp);
 	CImg<Tproc> imageC;
 	imageC.assign(s.width(),1,1,5, 0);
 	imageC.get_shared_channel(0)+=s;
@@ -243,14 +243,12 @@ public:
   virtual void kernelCPU_Trapeze(CImg<Tdata> &in,CImg<Tproc> &out)
   {    
 //! \todo [low] trapzoid container should be assigned once only
-    CImg<Tproc> trapeze(in.width());
+    trapeze.assign(in.width());
     trapezoidal_filter(in,trapeze, k,m,alpha, decalage);
     #if cimg_display!=0
     Display(in, trapeze, decalage);
     #endif //#cimg_display   
     ///Discri   
-    CImg<Tproc> s;
-    CImg<Tproc> imageDCF;
     Calcul_Discri(in,s,imageDCF, Tm,threshold, fraction,alpha);
     int Ti=Calcul_Ti(s,threshold);
     std::cout<< "Trigger start= " << Ti  <<std::endl;
