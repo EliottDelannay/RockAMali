@@ -39,6 +39,7 @@ public:
   int k, m, n, q, Tm, decalage;
   float/*Tproc*/ threshold;
   float alpha, fraction; 
+  CImg<Tproc> trapeze;
 
   CDataProcessorGPU_discri_opencl(std::vector<omp_lock_t*> &lock
   , compute::device device, int VECTOR_SIZE
@@ -90,8 +91,13 @@ public:
     kernelGPU(this->device_vector_in,this->device_vector_out);
     //copy GPU to CPU
     compute::copy(this->device_vector_out.begin(), this->device_vector_out.end(), out.begin(), this->queue);
+    kernel_Energy(in,out);
+  };//kernel
+
+  virtual void kernel_Energy(CImg<Tdata> in, CImg<Tproc> out)
+  {
     ///Trapezoidal computation on CPU    
-    CImg<Tproc> trapeze(in.width());
+    trapeze.assign(in.width());
     trapezoidal_filter(in,trapeze, k,m,alpha, decalage);
     //wait for GPU completion
     this->queue.finish();
@@ -101,7 +107,7 @@ public:
     /// energy computation on CPU    
     float E=Calculation_Energy(trapeze, Ti, n, q);
     std::cout<< "Energy= " << E  <<std::endl;
-  };//kernel
+  }
 
 };//CDataProcessorGPU_discri_opencl
 
@@ -192,8 +198,7 @@ public:
     kernelGPU2(device_vector_in2,device_vector_out2);
     //copy GPU to CPU
     compute::copy(device_vector_out2.begin(), device_vector_out2.end(), out2.begin(), this->queue);
-    //wait for completion
-    this->queue.finish();
+    this->kernel_Energy(in,out);
   };//kernel
 
   //! compution kernel for an iteration (compution=copy, here)
@@ -311,9 +316,7 @@ public:
     kernelGPU4(device_vector_in4,device_vector_out4);
     //copy GPU to CPU
     compute::copy(device_vector_out4.begin(), device_vector_out4.end(), out4.begin(), this->queue);
-
-    //wait for completion
-    this->queue.finish();
+    this->kernel_Energy(in,out);
   };//kernel
 
   //! compution kernel for an iteration (compution=copy, here)
