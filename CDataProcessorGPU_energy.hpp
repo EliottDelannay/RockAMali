@@ -40,6 +40,7 @@ public:
   float/*Tproc*/ threshold;
   float alpha, fraction; 
   CImg<Tproc> trapeze;
+  CImg<Tproc> discri;
 
   CDataProcessorGPU_discri_opencl(std::vector<omp_lock_t*> &lock
   , compute::device device, int VECTOR_SIZE
@@ -54,6 +55,9 @@ public:
     this->debug=true;
     this->class_name="CDataProcessorGPU_discri_opencl";
     this->check_locks(lock);
+    trapeze.assign(VECTOR_SIZE);
+    discri.assign(VECTOR_SIZE);
+//    this->image.assign(1);//content: E only
     ///read paramaters in NetCDF file
     Read_Filters_Paramaters(k,m,n,q,Tm,threshold, alpha,fraction);
     decalage= 2*k+m+2;
@@ -90,23 +94,23 @@ public:
     //compute
     kernelGPU(this->device_vector_in,this->device_vector_out);
     //copy GPU to CPU
-    compute::copy(this->device_vector_out.begin(), this->device_vector_out.end(), out.begin(), this->queue);
+    compute::copy(this->device_vector_out.begin(), this->device_vector_out.end(), discri.begin(), this->queue);
     kernel_Energy(in,out);
   };//kernel
 
   virtual void kernel_Energy(CImg<Tdata> in, CImg<Tproc> out)
   {
     ///Trapezoidal computation on CPU    
-    trapeze.assign(in.width());
     trapezoidal_filter(in,trapeze, k,m,alpha, decalage);
     //wait for GPU completion
     this->queue.finish();
     ///find trigger on CPU
-    int Ti=Calcul_Ti(out,threshold);
+    int Ti=Calcul_Ti(discri,threshold);
     std::cout<<"Trigger value :"<<Ti<<std::endl;
     /// energy computation on CPU    
     float E=Calculation_Energy(trapeze, Ti, n, q);
     std::cout<< "Energy= " << E  <<std::endl;
+    out(0)=E;
   }
 
 };//CDataProcessorGPU_discri_opencl
