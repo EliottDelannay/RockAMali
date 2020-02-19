@@ -306,7 +306,7 @@ public:
   {
     this->debug=true;
     this->class_name="CDataProcessor_Max_Min";
-std::cout<<__FILE__<<"::"<<__func__<<"(...)"<<std::endl;
+    std::cout<<__FILE__<<"::"<<__func__<<"(...)"<<std::endl;
     this->image.assign(1);//content: E only
     this->check_locks(lock);
   }//constructor

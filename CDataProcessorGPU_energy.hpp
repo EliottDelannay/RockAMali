@@ -82,7 +82,8 @@ public:
   //! compution kernel for an iteration
   virtual void kernel(CImg<Tdata> &in,CImg<Tproc> &out)
   {
-    /// discri computation on GPU
+    /// discri computation on GPU    
+    
     //copy CPU to GPU
     compute::copy(in.begin(), in.end(), this->device_vector_in.begin(), this->queue);
     //compute
@@ -90,10 +91,14 @@ public:
     //copy GPU to CPU
     compute::copy(this->device_vector_out.begin(), this->device_vector_out.end(), out.begin(), this->queue);
     ///Trapezoidal computation on CPU
+    
     //wait for completion
     this->queue.finish();
     ///find trigger on CPU
+    int Ti=Calcul_Ti(out,threshold);
+    std::cout<<"Trigger value :"<<Ti<<std::endl;
     /// energy computation on CPU
+    
   };//kernel
 
 };//CDataProcessorGPU_discri_opencl
