@@ -1,6 +1,9 @@
 #ifndef _DATA_PROCESSOR_GPU_FACTORY_
 #define _DATA_PROCESSOR_GPU_FACTORY_
 
+#include "CDataProcessorGPU.hpp"
+#include "CDataProcessorGPU_vMcPc.hpp"
+#include "CDataProcessorGPUopencl.hpp"
 #include "CDataProcessorGPU_energy.hpp"
 
 //! factory for GPU processing
@@ -25,8 +28,10 @@ public:
     //reset
     factory_types.clear();
     //if
+    ///base:  CDataProcessorGPU.hpp
     factory_types.push_back      ("copy")            ;if(name == factory_types.back())
       return new CDataProcessorGPU<Tdata,Tproc, Taccess>(lock,device,VECTOR_SIZE,wait_status,set_status,wait_statusR,set_statusR,do_check);
+    ///vMcPc: CDataProcessorGPU_vMcPc.hpp
     factory_types.push_back      ("program")         ;if(name == factory_types.back())
       return new CDataProcessorGPU_opencl<Tdata,Tproc, Taccess>(lock,device,VECTOR_SIZE,wait_status,set_status,wait_statusR,set_statusR,do_check);
     factory_types.push_back      ("lambda")          ;if(name == factory_types.back())
@@ -39,13 +44,22 @@ public:
       return new CDataProcessorGPU_function_lambda<Tdata,Tproc, Taccess>(lock,device,VECTOR_SIZE,wait_status,set_status,wait_statusR,set_statusR,do_check);
     factory_types.push_back      ("function_macro")  ;if(name == factory_types.back())
       return new CDataProcessorGPU_function_macro<Tdata,Tproc, Taccess>(lock,device,VECTOR_SIZE,wait_status,set_status,wait_statusR,set_statusR,do_check);
+    //energy: CDataProcessorGPU_energy.hpp
     factory_types.push_back      ("discri")          ;if(name == factory_types.back())
       return new CDataProcessorGPU_discri_opencl<Tdata,Tproc, Taccess>(lock,device,VECTOR_SIZE,wait_status,set_status,wait_statusR,set_statusR,do_check);
     factory_types.push_back      ("discri_in2")          ;if(name == factory_types.back())
       return new CDataProcessorGPU_discri_opencl_int2<Tdata,Tproc, Taccess>(lock,device,VECTOR_SIZE,wait_status,set_status,wait_statusR,set_statusR,do_check);
     factory_types.push_back      ("discri_in4")          ;if(name == factory_types.back())
       return new CDataProcessorGPU_discri_opencl_int4<Tdata,Tproc, Taccess>(lock,device,VECTOR_SIZE,wait_status,set_status,wait_statusR,set_statusR,do_check);
-
+    ///template: CDataProcessorGPUopencl.hpp
+    factory_types.push_back      ("program_template")  ;if(name == factory_types.back())
+      return new CDataProcessorGPU_opencl_template<Tdata,Tproc, Taccess>(lock,device,VECTOR_SIZE,wait_status,set_status,wait_statusR,set_statusR,do_check);
+    factory_types.push_back      ("program_T4")  ;if(name == factory_types.back())
+      return new CDataProcessorGPU_opencl_T4<Tdata,Tproc, Taccess>(lock,device,VECTOR_SIZE,wait_status,set_status,wait_statusR,set_statusR,do_check);
+    factory_types.push_back      ("program_T4xyzw")  ;if(name == factory_types.back())
+      return new CDataProcessorGPU_opencl_T4xyzw<Tdata,Tproc, Taccess>(lock,device,VECTOR_SIZE,wait_status,set_status,wait_statusR,set_statusR,do_check);
+    factory_types.push_back      ("program_T4ls_fma")  ;if(name == factory_types.back())
+      return new CDataProcessorGPU_opencl_T4ls_fma<Tdata,Tproc, Taccess>(lock,device,VECTOR_SIZE,wait_status,set_status,wait_statusR,set_statusR,do_check);
 //    if(name == "error")
 //      return new CDataProcessorGPU_error;
 

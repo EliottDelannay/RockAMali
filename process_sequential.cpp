@@ -9,7 +9,7 @@
 //OpenMP
 #include <omp.h>
 
-#define VERSION "v0.5.8d"
+#define VERSION "v0.6.3d"
 
 //thread lock
 #include "CDataGenerator_factory.hpp"
@@ -32,9 +32,7 @@ using namespace cimg_library;
 #define S 0 //sample
 
 //types
-typedef unsigned char Taccess;
-typedef unsigned int  Tdata;
-typedef float         Tproc;
+#include "SDataTypes.hpp"
 
 int main(int argc,char **argv)
 {
@@ -49,15 +47,22 @@ int main(int argc,char **argv)
   "\n          CParameterNetCDF."+std::string(CDL_PARAMETER_VERSION)+
   "\n          NcTypeInfo."+std::string(NETCDF_TYPE_INFO_VERSION)+
 #endif //NetCDF
+  "\n "+get_compiled_data_types()+
   "\n compilation date:" \
   ).c_str());//cimg_usage
 
-  const char* imagefilename = cimg_option("-o","sample.cimg",std::string("output file name (e.g." +
+  const char* imagefilename = cimg_option("-o","samples/sample.cimg",std::string("output file name (e.g." +
 #ifdef DO_NETCDF
   std::string(" \"-o data.nc\" or ") +
 #endif //NetCDF
   std::string(" \"-o data.cimg -d 3\" gives data_???.cimg)")
-  ).c_str());//ouput file name
+  ).c_str());//ouput file name for raw
+  const char* resultfilename = cimg_option("-r","results/sample.cimg",std::string("result file name (e.g." +
+#ifdef DO_NETCDF
+  std::string(" \"-r result.nc\" or ") +
+#endif //NetCDF
+  std::string(" \"-r result.cimg -d 3\" gives result_???.cimg)")
+  ).c_str());//ouput file name for result
   const int digit=cimg_option("-d",6,  "number of digit for file names");
   const int width=cimg_option("-s",1024, "size   of udp buffer");
   const int count=cimg_option("-n",256,  "number of frames");
@@ -190,8 +195,8 @@ int main(int argc,char **argv)
       ///GPU process from factory
       process=CDataProcessorGPUfactory<Tdata,Tproc, Taccess>::NewCDataProcessorGPU(processing_type,type_list
       , locks, gpu,width
-      , CDataAccess::STATUS_FILLED, CDataAccess::STATUS_FREE  //images
-      , CDataAccess::STATUS_FREE,   CDataAccess::STATUS_FILLED//results
+      , CDataAccess::STATUS_FILLED,CDataAccess::STATUS_PROCESSED //images
+      , CDataAccess::STATUS_FREE,  CDataAccess::STATUS_FILLED    //results
       , do_check
       );
       std::cout<<"information: processing type is the one of "<<process->class_name<<" class."<<std::endl<<std::flush;
@@ -228,21 +233,15 @@ int main(int argc,char **argv)
       std::cout<<"information: use CPU for processing."<<std::endl<<std::flush;
       process=CDataProcessorCPU_factory<Tdata,Tproc, Taccess>::NewCDataProcessorCPU(processor_type,cpu_type_list
       , locks
-      , CDataAccess::STATUS_FILLED, CDataAccess::STATUS_FREE  //images
-      , CDataAccess::STATUS_FREE,   CDataAccess::STATUS_FILLED//results
+      , CDataAccess::STATUS_FILLED,CDataAccess::STATUS_PROCESSED //images
+      , CDataAccess::STATUS_FREE,  CDataAccess::STATUS_FILLED    //results
       , do_check
       );
       }//CPU
       process_class_name=process->class_name;
-     //store
-      CDataStore<Tproc,Taccess> store(locksR, imagefilename,digit, CDataAccess::STATUS_FILLED);
-     //check if the combination of the process and generator is good
-	 if(process->class_name =="CDataProcessor_Max_Min" && generate->class_name =="CDataGenerator_Random")NULL;
-	    else {++check_error;std::cout<<"bad combination"<<std::endl<<std::flush; }
-	 if(process->class_name =="CDataProcessor_Trapeze" && generate->class_name =="CDataGenerator_Peak")NULL;
-	    else {++check_error;std::cout<<"bad combination"<<std::endl<<std::flush; }
-	 if(process->class_name =="CDataProcessor_Trapeze" && generate->class_name =="CDataGenerator_Peak_Noise")NULL;
-	    else {++check_error;std::cout<<"bad combination"<<std::endl<<std::flush; }      
+     //stores
+      CDataStore<Tdata,Taccess> store(locks,    imagefilename,digit, CDataAccess::STATUS_PROCESSED);
+      CDataStore<Tproc,Taccess> storeR(locksR, resultfilename,digit, CDataAccess::STATUS_FILLED);
       //run
       for(unsigned int i=0;i<count;++i)
       {
@@ -255,9 +254,8 @@ int main(int argc,char **argv)
 	std::cout<< generate->class_name<<std::endl;//return CDataGenerator"name of generator"  example : CDataGenerator_Peak_Noise	
         
         process->iteration(access,images, accessR,results, 0,i);
-        store.iteration(accessR,results, 0,i);
-	std::cout<< process->class_name<<std::endl;
-	std::cout<< generate->class_name<<std::endl;
+        store.iteration(access,images, 0,i);
+        storeR.iteration(accessR,results, 0,i);
         //check
         if(do_check)
         {

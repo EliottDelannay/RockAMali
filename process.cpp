@@ -11,7 +11,7 @@
 //OpenMP
 #include <omp.h>
 
-#define VERSION "v0.5.8d"
+#define VERSION "v0.5.9k"
 
 //thread lock
 #include "CDataGenerator_factory.hpp"
@@ -26,9 +26,7 @@ using namespace cimg_library;
 #define S 0 //sample
 
 //types
-typedef unsigned char Taccess;
-typedef unsigned int  Tdata;
-typedef float         Tproc;
+#include "SDataTypes.hpp"
 
 int main(int argc,char **argv)
 {
@@ -43,6 +41,7 @@ int main(int argc,char **argv)
   "\n          CParameterNetCDF."+std::string(CDL_PARAMETER_VERSION)+
   "\n          NcTypeInfo."+std::string(NETCDF_TYPE_INFO_VERSION)+
 #endif //NetCDF
+  "\n "+get_compiled_data_types()+
   "\n compilation date:" \
   ).c_str());//cimg_usage
 
