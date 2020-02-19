@@ -55,6 +55,7 @@ public:
     this->check_locks(lock);
     ///read paramaters in NetCDF file
     Read_Filters_Paramaters(k,m,n,q,Tm,threshold, alpha,fraction);
+    decalage= 2*k+m+2;
     ///OpenCL framework
     program=make_opencl_program(this->ctx);
     kernel_loaded=false;
@@ -82,23 +83,24 @@ public:
   //! compution kernel for an iteration
   virtual void kernel(CImg<Tdata> &in,CImg<Tproc> &out)
   {
-    /// discri computation on GPU    
-    
+    /// discri computation on GPU      
     //copy CPU to GPU
     compute::copy(in.begin(), in.end(), this->device_vector_in.begin(), this->queue);
     //compute
     kernelGPU(this->device_vector_in,this->device_vector_out);
     //copy GPU to CPU
     compute::copy(this->device_vector_out.begin(), this->device_vector_out.end(), out.begin(), this->queue);
-    ///Trapezoidal computation on CPU
-    
-    //wait for completion
+    ///Trapezoidal computation on CPU    
+    CImg<Tproc> trapeze(in.width(),1,1,1, in(0));
+    trapezoidal_filter(in,trapeze, k,m,alpha, decalage);
+    //wait for GPU completion
     this->queue.finish();
     ///find trigger on CPU
     int Ti=Calcul_Ti(out,threshold);
     std::cout<<"Trigger value :"<<Ti<<std::endl;
-    /// energy computation on CPU
-    
+    /// energy computation on CPU    
+    float E=Calculation_Energy(trapeze, Ti, n, q);
+    std::cout<< "Energy= " << E  <<std::endl;
   };//kernel
 
 };//CDataProcessorGPU_discri_opencl

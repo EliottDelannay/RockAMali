@@ -85,6 +85,18 @@
   th=Threshold;
   }//Read_Paramaters
 
+  //! fill the image with the filter
+  template<typename Tdata, typename Tproc>
+  int trapezoidal_filter(CImg<Tdata> e, CImg<Tproc> &s, int ks, int ms, double alp, int decalage) 
+  {
+  //create a filter
+    cimg_for_inX(s,decalage, s.width()-1,n)
+    s(n)=2*s(n-1)-s(n-2) + e(n-1)-alp*e(n-2) -e(n-(ks+1)) \
+			+alp*e(n-(ks+2))-e(n-(ks+ms+1))+alp*e(n-(ks+ms+2)) \
+					+e(n-(2*ks+ms+1))-alp*e(n-(2*ks+ms+2));		
+  }//trapezoidal_filter
+
+
 //  template<typename T>
   //!fill the image with 2 discri and display it, return the position of the trigger
   int Calcul_Ti(CImg<float> s, float th) 
@@ -164,16 +176,6 @@ public:
     this->image.assign(1);//content: E only
     this->check_locks(lock);
   }//constructor
-
-  //! fill the image with the filter
-  virtual int trapezoidal_filter(CImg<Tdata> e, CImg<Tproc> &s, int ks, int ms, double alp, int decalage) 
-  {
-  //create a filter
-    cimg_for_inX(s,decalage, s.width()-1,n)
-    s(n)=2*s(n-1)-s(n-2) + e(n-1)-alp*e(n-2) -e(n-(ks+1)) \
-			+alp*e(n-(ks+2))-e(n-(ks+ms+1))+alp*e(n-(ks+ms+2)) \
-					+e(n-(2*ks+ms+1))-alp*e(n-(2*ks+ms+2));		
-  }//trapezoidal_filter
 
   //! display the signal, the filter and the computation start
   #if cimg_display!=0
