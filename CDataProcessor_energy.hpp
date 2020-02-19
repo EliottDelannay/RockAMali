@@ -99,9 +99,9 @@
   }//trapezoidal_filter
 
 
-//  template<typename T>
+  template<typename T>
   //!fill the image with 2 discri and display it, return the position of the trigger
-  int Calcul_Ti(CImg<float> s, float th) 
+  int Calcul_Ti(CImg<T> s, float th) 
   {
 	//find the position of the trigger
 	int Ti=0;
