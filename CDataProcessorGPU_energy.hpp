@@ -91,7 +91,7 @@ public:
     //copy GPU to CPU
     compute::copy(this->device_vector_out.begin(), this->device_vector_out.end(), out.begin(), this->queue);
     ///Trapezoidal computation on CPU    
-    CImg<Tproc> trapeze(in.width(),1,1,1, in(0));
+    CImg<Tproc> trapeze(in.width());
     trapezoidal_filter(in,trapeze, k,m,alpha, decalage);
     //wait for GPU completion
     this->queue.finish();

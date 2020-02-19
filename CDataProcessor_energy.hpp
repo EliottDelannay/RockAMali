@@ -89,7 +89,9 @@
   template<typename Tdata, typename Tproc>
   int trapezoidal_filter(CImg<Tdata> e, CImg<Tproc> &s, int ks, int ms, double alp, int decalage) 
   {
-  //create a filter
+    //initiation of first parts of data
+    cimg_for_inX(s,0,decalage-1,n) s(n)=e(0);
+    //create a filter
     cimg_for_inX(s,decalage, s.width()-1,n)
     s(n)=2*s(n-1)-s(n-2) + e(n-1)-alp*e(n-2) -e(n-(ks+1)) \
 			+alp*e(n-(ks+2))-e(n-(ks+ms+1))+alp*e(n-(ks+ms+2)) \
@@ -241,7 +243,7 @@ public:
   virtual void kernelCPU_Trapeze(CImg<Tdata> &in,CImg<Tproc> &out)
   {    
 //! \todo [low] trapzoid container should be assigned once only
-    CImg<Tproc> trapeze(in.width(),1,1,1, in(0));
+    CImg<Tproc> trapeze(in.width());
     trapezoidal_filter(in,trapeze, k,m,alpha, decalage);
     #if cimg_display!=0
     Display(in, trapeze, decalage);
