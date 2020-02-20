@@ -15,15 +15,15 @@ variables:
   int graph;
      graph:long_name="signal graph (activated if >0)";
      graph:nb_tB_long_name="baseline time";
-     graph:nb_tB= 1500; 
+     graph:nb_tB= 2000; 
      graph:nb_tA_long_name="peak time"; 
-     graph:nb_tA= 15; 
+     graph:nb_tA= 20; 
      graph:tau_long_name="time decrease";
-     graph:tau= 750;
+     graph:tau= 1000;
      graph:A_long_name="Amplitude";
-     graph:A= 1750;
+     graph:A= 2000;
      graph:B_long_name="Baseline";
-     graph:B= 30;
+     graph:B= 40;
 //Generator Random
      graph:rand_min=0;
      graph:rand_max=65535;
