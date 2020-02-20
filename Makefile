@@ -46,7 +46,7 @@ endif #DO_GPU
 
 #source package
 SRC_DATA_BUFFER=thread_lock.hpp CDataAccess.hpp CDataBuffer.hpp
-SRC_DATA_GENERATOR=CDataGenerator.hpp CDataGenerator_factory.hpp
+SRC_DATA_GENERATOR=CDataGenerator.hpp CDataGenerator_PAC.hpp CDataGenerator_factory.hpp
 SRC_DATA_PROCESS=CDataProcessor.hpp CDataProcessorGPU.hpp CDataProcessorGPUopencl.hpp CDataProcessorGPUfactory.hpp
 HELP_OUTPUT=process_sequential_help.output process_help.output send_help.output receive_help.output store_help.output
 SRC_NETCDF=../NetCDF.Tool/NetCDFinfo.h ../NetCDF.Tool/struct_parameter_NetCDF.h ../CImg.Tool/CImg_NetCDF.h

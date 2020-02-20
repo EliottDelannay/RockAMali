@@ -1,10 +1,10 @@
 Paramaters :
 graph=1
-  nb_tB=2000
-  nb_tA=20
-  tau=1000
-  A=2000
-  B=40
+  nb_tB=1000
+  nb_tA=10
+  tau=500
+  A=1234
+  B=20
 graph=1
   noise=0
 trapezoid=1
@@ -18,25 +18,17 @@ trapezoid=1
   Tm=20
 
 CPU Result : 
-peak_noise: this = 0x1a2d498, size = (4096,1,1,1) [16 Kio], data = (unsigned int*)0x1a2d6a0..0x1a3169f (non-shared) = [ 40 40 40 40 40 40 40 40 ... 292 292 292 292 291 291 291 291 ], min = 40, max = 2040, mean = 471.64, std = 548.141, coords_min = (0,0,0,0), coords_max = (2020,0,0,0).
-Trigger start= 2001
-base=41
-peak=460803
-Energy= 460762
-filter: this = 0x1a31708, size = (1,1,1,1) [4 b], data = (float*)0x1ab0390..0x1ab0393 (non-shared) = [ 460762 ], min = 460762, max = 460762, mean = 460762, std = 0, coords_min = (0,0,0,0), coords_max = (0,0,0,0).
+peak_noise: this = 0x137a498, size = (4096,1,1,1) [16 Kio], data = (unsigned int*)0x137a6a0..0x137e69f (non-shared) = [ 20 20 20 20 20 20 20 20 ... 22 22 22 22 22 22 22 22 ], min = 20, max = 1254, mean = 171.446, std = 266.676, coords_min = (0,0,0,0), coords_max = (1010,0,0,0).
+Trigger start= 1001
+base=20
+peak=256237
+Energy= 256217
+filter: this = 0x137e708, size = (1,1,1,1) [4 b], data = (float*)0x13fc7a0..0x13fc7a3 (non-shared) = [ 256217 ], min = 256217, max = 256217, mean = 256217, std = 0, coords_min = (0,0,0,0), coords_max = (0,0,0,0).
 G0/1 4 B00 #0001 wait=1
-CDataProcessor_Trapeze
-CDataGenerator_Peak_Noise
 
 GPU Result : 
-peak_noise: this = 0x558835f198, size = (4096,1,1,1) [16 Kio], data = (unsigned int*)0x558835f3a0..0x558836339f (non-shared) = [ 40 40 40 40 40 40 40 40 ... 292 292 292 292 291 291 291 291 ], min = 40, max = 2040, mean = 471.64, std = 548.141, coords_min = (0,0,0,0), coords_max = (2020,0,0,0).
-
-Trigger value :2001
-base=41
-peak=460803
-Energy= 460762
-CDataProcessorGPU_discri_opencl
-CDataGenerator_Peak_Noise
-
-
-
+peak_noise: this = 0x558d0d4198, size = (4096,1,1,1) [16 Kio], data = (unsigned int*)0x558d0d43a0..0x558d0d839f (non-shared) = [ 20 20 20 20 20 20 20 20 ... 22 22 22 22 22 22 22 22 ], min = 20, max = 1254, mean = 171.446, std = 266.676, coords_min = (0,0,0,0), coords_max = (1010,0,0,0).
+Trigger value :1001
+base=20
+peak=256237
+Energy= 256217

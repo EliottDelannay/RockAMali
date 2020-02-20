@@ -4,6 +4,11 @@
 #include "CDataProcessorGPU.hpp"
 #include "CDataProcessor_energy.hpp"
 
+//! discri calculation GPU process 
+/**
+ * computation of the discri
+ * return the value of energy
+**/
 template<typename Tdata=unsigned int,typename Tproc=unsigned int, typename Taccess=unsigned char>
 class CDataProcessorGPU_discri_opencl : public CDataProcessorGPU<Tdata,Tproc, Taccess>
 {
@@ -23,7 +28,6 @@ compute::program make_opencl_program(const compute::context& context)
     {
         output[gid]=input[gid]-alpha*input[gid-1];
     }
-    
   }
   );//source
   // create program
@@ -111,6 +115,12 @@ public:
 
 };//CDataProcessorGPU_discri_opencl
 
+//! discri calculation GPU process 
+/**
+ * computation of the discri
+ * return the value of energy
+ * make the computation on 2 threads
+**/
 
 template<typename Tdata=unsigned int,typename Tproc=unsigned int, typename Taccess=unsigned char>
 class CDataProcessorGPU_discri_opencl_int2 : public CDataProcessorGPU_discri_opencl<Tdata,Tproc, Taccess>
@@ -221,6 +231,13 @@ public:
   };//kernelGPU2
 
 };//CDataProcessorGPU_discri_opencl_int2
+
+//! discri calculation GPU process 
+/**
+ * computation of the discri
+ * return the value of energy
+ * make the computation on 4 threads
+**/
 
 template<typename Tdata=unsigned int,typename Tproc=unsigned int, typename Taccess=unsigned char>
 class CDataProcessorGPU_discri_opencl_int4 : public CDataProcessorGPU_discri_opencl<Tdata,Tproc, Taccess>

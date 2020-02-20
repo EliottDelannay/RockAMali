@@ -15,21 +15,21 @@ variables:
   int graph;
      graph:long_name="signal graph (activated if >0)";
      graph:nb_tB_long_name="baseline time";
-     graph:nb_tB= 2000; 
+     graph:nb_tB= 1000;  
      graph:nb_tA_long_name="peak time"; 
-     graph:nb_tA= 20; 
+     graph:nb_tA= 10;
      graph:tau_long_name="time decrease";
-     graph:tau= 1000;
+     graph:tau= 500;
      graph:A_long_name="Amplitude";
-     graph:A= 2000;
+     graph:A= 1234;
      graph:B_long_name="Baseline";
-     graph:B= 40;
-//Generator Random
+     graph:B= 20;
+     //Generator Random
      graph:rand_min=0;
      graph:rand_max=65535;
-//Generator full_random
+     //Generator full_random
      graph:noise=0.0;//12.3;
-//! \todo noise_ampl instead of min_Amp and max_Amp, same for tau, tA, tB (+B)
+     //! \todo noise_ampl instead of min_Amp and max_Amp, same for tau, tA, tB (+B)
      graph:min_Amp=1000;
      graph:max_Amp=1234;
      graph:min_tau=500;

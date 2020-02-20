@@ -142,6 +142,25 @@ public:
 
 };//CDataGenerator_Peak
 
+
+//! generate a single peak close to PAC signal with noise
+/**
+ * generate a single curve looking like PAC signal with some noise
+ *
+ * generate Peak data into a shared circular buffer
+ * \note Peak data except first one that is frame count value
+ *
+ * parameters NetCDF CDL :
+ * - B: base line
+ * - A: Amplitude
+ * - nb_tA: peak duration
+ * - nb_tB: baseline duration
+ * - Tau: decrease time
+ * - noise: value of the noise added
+ *
+ * \ref pageSchema "Signal schema" 
+**/
+
 template<typename Tdata, typename Taccess=unsigned char>
 class CDataGenerator_Peak_Noise: public CDataGenerator_Peak<Tdata, Taccess>
 {
@@ -222,21 +241,24 @@ public:
 
 };//CDataGenerator_Peak_Noise
 
-
-//! Explanation of signal paramaters
+//! generate a single peak close to PAC signal with differents values
 /**
-  \page pageSchema Schema du signal
- * 
- * \image html Signal_details.png "PAC signal details"
+ * generate a single curve looking like PAC signal with a random values at each iteration
  *
- *  graphic legend :  
- * - B: Baseline
- * - A: Amplitude
- * - nb_tA: peak duration
- * - nb_tB: baseline duration
- * - Tau: decrease time
- * - A * exp(-t/tau)+B: Exponential decrease 
- * - nbitem: size of image (x) 
+ * generate Peak data into a shared circular buffer
+ * \note Peak data except first one that is frame count value
+ *
+ * parameters NetCDF CDL :
+ * - min_Amp: minimum Amplitude
+ * - max_Amp: maximum Amplitude
+ * - min_tA: minimum peak duration
+ * - max_tA: maximum peak duration
+ * - min_tB: minimum baseline duration
+ * - max_tB: maximum baseline duration
+ * - min_tau: minimum decrease time
+ * - max_tau: maximum decrease time
+ * 
+ * \ref pageSchema "Signal schema" 
 **/
 
 template<typename Tdata, typename Taccess=unsigned char>
@@ -397,6 +419,46 @@ public:
 
 
 #endif //NetCDF
+
+//! Explanation of signal paramaters
+/**
+  \page pageSchema PAC Signal
+ * \li \ref sectionGenerator
+ * \li \ref sectionProcessor
+ * \n Generation of PAC signal and its processing are described here
+ *
+ ** \section sectionGenerator Generation of PAC signal
+ * \image html Signal_details.png "PAC signal details"
+ *
+ *   Graphic legend :   
+ * - blue curve : signal pac values (y axis)
+ * - B: Baseline					(20)
+ * - A: Amplitude					(1234)
+ * - nb_tA: peak duration				(10)
+ * - nb_tB: baseline duration				(1000)
+ * - Tau: decrease time					(500)
+ * A * exp(-t/tau)+B: Exponential decrease 
+ * - nbitem: size of frame (x axis) 				(4096)
+ *
+ ** \section sectionProcessor PAC signal processing
+ * \image html filter_details.png "Trapezoidal filter details"
+ *
+ *  Graphic legend :  
+ * - Signal: Signal Pac representation	
+ * - Filter: show the energy with the formula : \n
+ *  <I> s(n)=2*s(n-1)-s(n-2) + e(n-1)-alp*e(n-2) -e(n-(ks+1)) +alp*e(n-(ks+2))-e(n-(ks+ms+1))+alp*e(n-(ks+ms+2))+e(n-(2*ks+ms+1))-alp*e(n-(2*ks+ms+2)) </I> \n
+ *  where alp=alpha ; s= trapezoidal; e=signal pac ; ks = increase size ; ms = plateau size;
+ *  \note Filter Computation: Represent the part where computation of the filter is done
+ * 
+ * \image html discri_details.png "discri details"
+ *
+ *  Graphic legend :  
+ * - DCFD: (n-delay)-frac*s(n)
+ * - Discri simple: e(n)-alp*e(n-1)
+ * - Threshold : value who serve as reference
+ * - Signal : Signal Pac representation
+ * - Trigger : end of the baseline, this is the result of the computation
+**/
 
 #endif //_DATA_GENERATOR_PAC_
 

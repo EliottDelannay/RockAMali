@@ -36,7 +36,7 @@ public:
   {
     this->debug=true;
     this->class_name="CDataProcessor_Max_Min";
-std::cout<<__FILE__<<"::"<<__func__<<"(...)"<<std::endl;
+     std::cout<<__FILE__<<"::"<<__func__<<"(...)"<<std::endl;
     this->image.assign(1);//content: E only
     this->check_locks(lock);
   }//constructor
@@ -103,7 +103,7 @@ std::cout<<__FILE__<<"::"<<__func__<<"(...)"<<std::endl;
 
 #ifdef DO_NETCDF
 
-//! read processing parameters from CDL parameter file (as .nc)
+  //! read processing parameters from CDL parameter file (as .nc)
   int Read_Filters_Paramaters (int &ks, int &ms, int &number, int &qDelay, int &Tpeak, float &th, float &alp, float &frac)
   {
   ///file name
@@ -181,7 +181,7 @@ std::cout<<__FILE__<<"::"<<__func__<<"(...)"<<std::endl;
   alp=Alpha;
   frac=Fraction;
   th=Threshold;
-  }//Read_Paramaters
+  }//Read_Filters_Paramaters
 
   //! fill the image with the filter
   template<typename Tdata, typename Tproc>
@@ -245,7 +245,7 @@ std::cout<<__FILE__<<"::"<<__func__<<"(...)"<<std::endl;
  * - q= Computing Delay
  * - Tm= peak time
  * - threshold= should be 36.8 % of the amplitude
- * - alpha=duty cicle
+ * - alpha= 
  * - fraction=
  *
  * \ref pageSchema "Signal schema" 
@@ -302,8 +302,7 @@ public:
 	//Discri treshold		
 	imageDCF.assign(s.width(),1,1,1, 0);
 	cimg_for_inX(imageDCF,delay,s.width(),n) imageDCF(n)=s(n-delay)-frac*s(n);
-	//find the position of the trigger
-		
+	//find the position of the trigger		
   }//Calcul_Discri
 
   #if cimg_display!=0
