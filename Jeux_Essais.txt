@@ -1,0 +1,36 @@
+Paramaters :
+graph=1
+  nb_tB=1500
+  nb_tA=15
+  tau=750
+  A=1750
+  B=30
+graph=1
+  noise=0
+trapezoid=1
+  k=200
+  m=50
+  alpha=0.998002
+  n=34
+  q=211
+  threshold=3.4
+  fraction=0.2
+  Tm=20
+
+CPU Result : 
+peak_noise: this = 0x1bdb498, size = (4096,1,1,1) [16 Kio], data = (unsigned int*)0x1bdb6a0..0x1bdf69f (non-shared) = [ 30 30 30 30 30 30 30 30 ... 86 86 86 86 86 86 86 86 ], min = 30, max = 1780, mean = 343.055, std = 430.778, coords_min = (0,0,0,0), coords_max = (1515,0,0,0).
+Trigger start= 1501
+base=30
+peak=390000
+Energy= 389969
+filter: this = 0x1bdf708, size = (1,1,1,1) [4 b], data = (float*)0x1c5d3b0..0x1c5d3b3 (non-shared) = [ 389969 ], min = 389969, max = 389969, mean = 389969, std = 0, coords_min = (0,0,0,0), coords_max = (0,0,0,0).
+
+GPU Result : 
+peak_noise: this = 0x558d0d4198, size = (4096,1,1,1) [16 Kio], data = (unsigned int*)0x558d0d43a0..0x558d0d839f (non-shared) = [ 20 20 20 20 20 20 20 20 ... 22 22 22 22 22 22 22 22 ], min = 20, max = 1254, mean = 171.446, std = 266.676, coords_min = (0,0,0,0), coords_max = (1010,0,0,0).
+Trigger value :1001
+base=20
+peak=256237
+Energy= 256217
+
+
+

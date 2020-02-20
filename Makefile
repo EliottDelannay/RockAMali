@@ -3,9 +3,9 @@
 ## uint   = 4uchar: 2048*2 = 8192BoF
 FRAME_SIZE=4096
 NP=4
-GEN_FCT=full_random
+GEN_FCT=peak_noise
 PROC=filter
-USE_GPU=--use-GPU --GPU-factory discri_in4
+USE_GPU=--use-GPU --GPU-factory discri
 #USE_GPU=
 DO_CHECK=--do-check
 #DO_CHECK=
