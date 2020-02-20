@@ -4,6 +4,7 @@
 #include "CDataGenerator.hpp"
 
 #ifdef DO_NETCDF
+#include "CImg_NetCDF.h"
 
 //! generate a single peak close to PAC signal
 /**
@@ -22,13 +23,29 @@
  * \ref pageSchema "Signal schema" 
 **/
 
-template<typename Tdata, typename Taccess=unsigned char>
+template<typename Tdata, typename Taccess=unsigned char
+#ifdef DO_NETCDF
+, typename Tnetcdf=int
+#endif //DO_NETCDF
+>
 class CDataGenerator_Peak: public CDataGenerator<Tdata, Taccess>
 {
 
 public:
   int nb_tB,nb_tA,A,B;
   double tau; 
+#ifdef DO_NETCDF
+  std::string file_name="pac_signal_parameters.nc";
+  CImgNetCDF<Tnetcdf> nc;
+  CImg<Tnetcdf> nc_img;//temporary image for type conversion
+  bool is_netcdf_init;
+  //dimension names
+  std::vector<std::string> dim_names;
+  std::string dim_time;
+  //variable names (and its unit)
+  std::string var_name;
+  std::string unit_name;
+#endif //DO_NETCDF
   int Get_Parameters(int &nb_base, int &nb_peak, double &decrease, int &ampl, int &base)
   {
     int Tau;
@@ -112,6 +129,19 @@ public:
     Get_Parameters(nb_tB, nb_tA, tau, A, B);//Signal Parameters	
     nb_tA+=nb_tB; //nb_tA is position
     this->check_locks(lock);
+    #ifdef DO_NETCDF
+    nc_img.assign(1,1,1,1,-99);
+    std::cout << "CImgNetCDF::saveNetCDFFile(" << file_name << ",...) return " << nc.saveNetCDFFile((char*)file_name.c_str()) << std::endl;
+    is_netcdf_init=false;
+    dim_time="dimF";
+    dim_names.push_back("dim1");
+std::cout << "CImgNetCDF::addNetCDFDims(" << file_name << ",...) return " << nc.addNetCDFDims(nc_img,dim_names,dim_time) << std::endl<<std::flush;
+    //variable names (and its unit)
+    var_name="A";
+    unit_name="digit";
+std::cout << "CImgNetCDF::addNetCDFVar(" << file_name << ",...) return " << nc.addNetCDFVar(nc_img,var_name,unit_name) << std::endl<<std::flush;
+//! todo add other parameters
+#endif //DO_NETCDF
   }//constructor
 
   //! one iteration for any loop
@@ -397,7 +427,18 @@ public:
     this->nb_tA =  rand()%(max_tA-min_tA+1)+min_tA; 
     std::cout<<"nb_tA = "<<this->nb_tA<<std::endl; 
     this->nb_tA+=this->nb_tB;
-     std::cout<<"nb_tA+nb_tB = "<<this->nb_tA<<std::endl; 
+     std::cout<<"nb_tA+nb_tB = "<<this->nb_tA<<std::endl;
+#ifdef DO_NETCDF
+    if(!this->is_netcdf_init)
+    {
+      //add class name in NetCDF profiling file
+      if (!(this->nc.pNCvar->add_att("generator",this->class_name.c_str()))) std::cerr<<"error: for profiling in NetCDF, while adding kernel name attribute"<<this->class_name<<" (NC_ERROR)."<<std::endl;
+      this->is_netcdf_init=true;
+    }//!is_netcdf_init
+    //add data to NetCDF profiling file
+    this->nc_img(0)=this->A;
+std::cout << "CImgNetCDF::addNetCDFData(" << this->file_name << ",...) return " << this->nc.addNetCDFData(this->nc_img) << std::endl;
+#endif //DO_NETCDF
      //noise
     if(index ==0)this->Random.assign(images[n].width());
     this->Random.rand(this->rand_min,this->rand_max);

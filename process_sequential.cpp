@@ -274,6 +274,13 @@ int main(int argc,char **argv)
          if(show) results[0].display_graph(processor_type.c_str());
         #endif
       }//vector loop
+     #ifdef DO_NETCDF
+//! \bug [parameters in NetCDF] force close of file ?!
+      {
+      CDataGenerator_Full_Random<Tdata, Taccess>*gen=(CDataGenerator_Full_Random<Tdata, Taccess>*)generate;
+      gen->nc.pNCFile->close();
+      }
+      #endif //DO_NETCDF
       break;
     }//sequential
   }//switch(id)

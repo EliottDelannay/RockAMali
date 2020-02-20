@@ -3,7 +3,7 @@
 ## uint   = 4uchar: 2048*2 = 8192BoF
 FRAME_SIZE=4096
 NP=4
-GEN_FCT=peak_noise
+GEN_FCT=full_random
 PROC=filter
 USE_GPU=--use-GPU --GPU-factory discri
 #USE_GPU=
@@ -110,7 +110,7 @@ process_run:
 #	./process -c $(NT) -s $(FRAME_SIZE) -o sample.cimg --generator-factory $(GEN_FCT) --CPU-factory $(PROC) $(USE_GPU) -b $(NB) -n $(NS) $(DO_CHECK) # 2>&1 | grep -e info -e test -e failed -e double -e fault -e $(GEN_FCT) -e $(PROC) --color
 
 process_sequential_run:
-	ncgen parameters.cdl -o parameters.nc && rm sample_sequential.nc; ./process_sequential   -s $(FRAME_SIZE) -o sample_sequential.nc -r result_sequential.nc --generator-factory $(GEN_FCT) --CPU-factory $(PROC) -n 1234 $(USE_GPU) $(DO_CHECK) && ncdump -h sample_sequential.nc && ncdump -h result_sequential.nc && ncrename -v signal,process -d dimS,dimR result_sequential.nc && cp -p  sample_sequential.nc  all_sequential.nc && ncks -A result_sequential.nc -o all_sequential.nc && ncdump -h all_sequential.nc && ncview all_sequential.nc
+	ncgen parameters.cdl -o parameters.nc && rm sample_sequential.nc; ./process_sequential   -s $(FRAME_SIZE) -o sample_sequential.nc -r result_sequential.nc --generator-factory $(GEN_FCT) --CPU-factory $(PROC) -n 12 $(USE_GPU) $(DO_CHECK) && ncdump -h sample_sequential.nc && ncdump -h result_sequential.nc && ncrename -v signal,process -d dimS,dimR result_sequential.nc && cp -p  sample_sequential.nc  all_sequential.nc && ncks -A result_sequential.nc -o all_sequential.nc && ncdump -h all_sequential.nc && ncdump pac_signal_parameters.nc && ncview all_sequential.nc 
 process_sequentialX_run:
 	ncgen parameters.cdl -o parameters.nc && rm sample_sequential.nc; ./process_sequential.X -s $(FRAME_SIZE) -o sample_sequential.nc -r result_sequential.nc --generator-factory $(GEN_FCT) --CPU-factory $(PROC) -n 12 $(USE_GPU) $(DO_CHECK) --show && ncdump -h sample_sequential.nc
 
