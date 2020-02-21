@@ -34,7 +34,7 @@ public:
   )
   : CDataProcessor_kernel<Tdata,Tproc, Taccess>(lock,wait_status,set_status,wait_statusR,set_statusR,do_check)
   {
-    this->debug=true;
+//    this->debug=true;
     this->class_name="CDataProcessor_Max_Min";
      std::cout<<__FILE__<<"::"<<__func__<<"(...)"<<std::endl;
     this->image.assign(1);//content: E only
@@ -269,7 +269,7 @@ public:
   )
   : CDataProcessor_kernel<Tdata,Tproc, Taccess>(lock,wait_status,set_status,wait_statusR,set_statusR,do_check)
   {
-    this->debug=true;
+//    this->debug=true;
     this->class_name="CDataProcessor_Trapeze";
     std::cout<<__FILE__<<"::"<<__func__<<"(...)"<<std::endl;
     Read_Filters_Paramaters(k,m,n,q,Tm,threshold, alpha,fraction);

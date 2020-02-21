@@ -76,7 +76,7 @@ std::cout<<"source:"<<std::endl<<"\""<<source<<std::endl<<"\""<<std::endl<<std::
   )
   : CDataProcessorGPU_vMcPc_check<Tdata,Tproc, Taccess>(lock,device,VECTOR_SIZE,wait_status,set_status,wait_statusR,set_statusR,do_check)
   {
-    this->debug=true;
+//    this->debug=true;
     this->check_locks(lock);
     //OpenCL framework
     program=make_opencl_program(this->ctx);
@@ -156,7 +156,7 @@ virtual void define_opencl_source()
   : CDataProcessorGPU_opencl_template<Tdata,Tproc, Taccess>(lock,device,VECTOR_SIZE,wait_status,set_status,wait_statusR,set_statusR,do_check)
   , device_vector_in4(VECTOR_SIZE/4, this->ctx), device_vector_out4(VECTOR_SIZE/4, this->ctx)
   {
-    this->debug=true;
+//    this->debug=true;
     this->check_locks(lock);
     in4._width=out4._width=VECTOR_SIZE/4;
     in4._height=out4._height=1;
@@ -193,13 +193,21 @@ virtual void define_opencl_source()
     in4._data=(Tdata4*)in.data();
     out4._data=(Tproc4*)out.data();
     //copy CPU to GPU
-    compute::copy(in4.begin(), in4.end(), device_vector_in4.begin(), this->queue);
+   #ifdef DO_GPU_PROFILING
+    this->future=compute::copy_async
+   #else
+    compute::copy
+   #endif //DO_GPU_PROFILING
+    (in4.begin(),in4.end(), device_vector_in4.begin(), this->queue);
     //compute
     kernelGPU4(device_vector_in4,device_vector_out4);
     //copy GPU to CPU
-    compute::copy(device_vector_out4.begin(), device_vector_out4.end(), out4.begin(), this->queue);
+    compute::copy(device_vector_out4.begin(),device_vector_out4.end(), out4.begin(), this->queue);
     //wait for completion
     this->queue.finish();
+   #ifdef DO_GPU_PROFILING
+    this->kernel_elapsed_time();
+   #endif //DO_GPU_PROFILING
     ///unshare data
     in4._data=NULL;
     out4._data=NULL;
@@ -257,7 +265,7 @@ virtual void define_opencl_source()
   )
   : CDataProcessorGPU_opencl_T4<Tdata,Tproc, Taccess>(lock,device,VECTOR_SIZE,wait_status,set_status,wait_statusR,set_statusR,do_check)
   {
-    this->debug=true;
+//    this->debug=true;
     this->check_locks(lock);
     //OpenCL framework
     this->program=this->make_opencl_program(this->ctx);
@@ -310,7 +318,7 @@ virtual void define_opencl_source()
   )
   : CDataProcessorGPU_opencl_T4<Tdata,Tproc, Taccess>(lock,device,VECTOR_SIZE,wait_status,set_status,wait_statusR,set_statusR,do_check)
   {
-    this->debug=true;
+//    this->debug=true;
     this->check_locks(lock);
     //OpenCL framework
     this->program=this->make_opencl_program(this->ctx);
