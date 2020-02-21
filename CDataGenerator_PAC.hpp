@@ -473,10 +473,25 @@ std::cout << "CImgListNetCDF::addNetCDFData(" << this->file_name << ",...) retur
 //! Explanation of signal paramaters
 /**
   \page pageSchema PAC Signal
+ * \li \ref sectionDisplay
  * \li \ref sectionGenerator
  * \li \ref sectionProcessor
  * \n Generation of PAC signal and its processing are described here
  *
+ *
+ ** \section sectionDisplay Compile & execute the program
+ * \image html Makefile_doc.png "Line to change & commands to type"
+ *
+ * - Makefile : \n
+ *  GEN_FCT = name of the signal to be generated (in our case "signal_pac") \n
+ *  PROC = name of the processor (in our case "filter")
+ * - Terminal : \n
+ *  make process_sequentialX = create the executable that will generate, process the signal \n
+ *  make process-sequentialX_run = launch the executable who print and dispay the results with CImg \n
+ *  make process_sequentialX_run \n
+ncgen parameters.cdl -o parameters.nc && rm sample_sequential.nc; ./process_sequential.X -s 4096 -o sample_sequential.nc -r result_sequential.nc --generator-factory signal_pac --CPU-factory filter -n 12 --use-GPU --GPU-factory discri --do-check --show && ncdump -h sample_sequential.nc \n
+ * Ncgen allow to find the paramaters in the .cdl file
+ * 
  ** \section sectionGenerator Generation of PAC signal
  * \image html Signal_details.png "PAC signal details"
  *
@@ -507,7 +522,15 @@ std::cout << "CImgListNetCDF::addNetCDFData(" << this->file_name << ",...) retur
  * - Discri simple: e(n)-alp*e(n-1)
  * - Threshold : value who serve as reference
  * - Signal : Signal Pac representation
- * - Trigger : end of the baseline, this is the result of the computation
+ * - Trigger : end of the baseline, this is the result of the computation \n
+ *
+ * \image html ParaFilter_details.png "Paramaters filter trapezoidal details"
+ *
+ *  Graphic legend :  
+ * - N baseline : n values of baseline
+ * - Q delay : Time between the trigger and the max
+ * - N flat top : n values at max
+ * - Filter : trapezoidal filter
 **/
 
 #endif //_DATA_GENERATOR_PAC_
