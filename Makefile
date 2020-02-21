@@ -9,6 +9,7 @@ USE_GPU=--use-GPU --GPU-factory discri
 #USE_GPU=
 DO_CHECK=--do-check
 #DO_CHECK=
+DO_PROFILING=-DDO_PROFILING
 
 DATA=./
 DATA=/media/temp/
@@ -20,7 +21,7 @@ FOUT=$(FIN)
 
 #compiler options
 LIB_XWINDOWS=-I/usr/X11R6/include -L/usr/X11R6/lib -lX11
-LIB_CIMG=-I../CImg -Wall -W -ansi -pedantic -Dcimg_use_vt100 -lpthread -lm -fopenmp
+LIB_CIMG=-I../CImg -Wall -W -pedantic -Dcimg_use_vt100 -lpthread -lm -fopenmp
 LIB_BOOST_ASIO=-lboost_system
 LIB_BOOST_COMPUTE=-lMali -L/usr/lib/aarch64-linux-gnu/ -DBOOST_COMPUTE_MAX_CL_VERSION=102
 #NetCDF library (depending on target architecture)
@@ -39,9 +40,11 @@ DO_NETCDF=-DDO_NETCDF $(LIB_NETCDF)
 ifeq ($(shell uname -p),x86_64)
 ##AMD64 (gan*)
 	DO_GPU=
+	DO_GPU_PROFILING=
 else
 ##ARM64 (RockPro64)
 	DO_GPU=-DDO_GPU $(LIB_BOOST_COMPUTE)
+	DO_GPU_PROFILING=-DDO_GPU_PROFILING
 endif #DO_GPU
 
 #source package
@@ -54,18 +57,24 @@ SRC_NETCDF=../NetCDF.Tool/NetCDFinfo.h ../NetCDF.Tool/struct_parameter_NetCDF.h 
 #all: process_sequential process send receive version factory doc
 #all: process_sequential process version factory doc
 #all: send receive version factory doc
-all: process_sequential version factory process_sequential_run process_sequential_check
+
+all: process_sequential version factory process_sequential_run
 
 #all: time_copy
 time_copy: time_copy.cpp
 	g++ -O0 -o time_copy time_copy.cpp $(DO_GPU) && ./time_copy
+
+std_high_res_clock: std_high_res_clock.cpp
+	g++ -std=c++11 std_high_res_clock.cpp -o std_high_res_clock && ./std_high_res_clock
 
 gui: main.cpp
 	g++ -O0 -o generate.X main.cpp -I../CImg -Wall -W -ansi -pedantic -Dcimg_use_vt100 -lpthread -lm -fopenmp -lboost_system $(LIB_XWINDOWS) && ./generate.X -h -I && ./generate.X -v > VERSION
 	./generate.X -h 2> generateX_help.output
 
 process: process.cpp SDataTypes.hpp $(SRC_DATA_BUFFER) $(SRC_DATA_GENERATOR) $(SRC_DATA_PROCESS) CDataStore.hpp $(SRC_NETCDF)
-	g++ -O0 -o process   process.cpp $(LIB_CIMG) $(DO_NETCDF) -Dcimg_display=0 $(DO_GPU) && ./process   -h -I && ./process   -v > VERSION
+	g++ -O0 -o process   process.cpp $(LIB_CIMG) $(DO_NETCDF) -Dcimg_display=0 $(DO_GPU) $(DO_GPU_PROFILING) && ./process   -h -I && ./process   -v > VERSION
+#	g++ -O0 -o process.X process.cpp $(LIB_CIMG) $(DO_NETCDF) $(LIB_XWINDOWS)  $(DO_GPU) $(DO_GPU_PROFILING) && ./process.X -h -I && ./process.X -v > VERSION
+
 	./process -h 2> process_help.output
 processX: process.cpp $(SRC_DATA_BUFFER) $(SRC_DATA_GENERATOR) $(SRC_DATA_PROCESS) CDataStore.hpp $(SRC_NETCDF)
 	g++ -O0 -o process.X process.cpp $(LIB_CIMG) $(DO_NETCDF) $(LIB_XWINDOWS)  $(DO_GPU) && ./process.X -h -I && ./process.X -v > VERSION
@@ -75,7 +84,9 @@ processX: process.cpp $(SRC_DATA_BUFFER) $(SRC_DATA_GENERATOR) $(SRC_DATA_PROCES
 #SEQ_GPU=-DDO_GPU_SEQ_QUEUE
 SEQ_GPU=-DDO_GPU_NO_QUEUE
 process_sequential: process_sequential.cpp SDataTypes.hpp $(SRC_DATA_BUFFER) $(SRC_DATA_GENERATOR) $(SRC_DATA_PROCESS) CDataStore.hpp $(SRC_NETCDF)
-	g++ $(SEQ_GPU) -O0  -o process_sequential   process_sequential.cpp $(LIB_CIMG) $(DO_NETCDF) -Dcimg_display=0 $(DO_GPU) && ./process_sequential   -h -I && ./process_sequential   -v > VERSION
+	g++ -std=c++11 $(SEQ_GPU) -O0 -o process_sequential   process_sequential.cpp $(LIB_CIMG) $(DO_NETCDF) -Dcimg_display=0 $(DO_GPU) $(DO_GPU_PROFILING) $(DO_PROFILING) && ./process_sequential   -h -I && ./process_sequential   -v > VERSION
+#	g++ -std=c++11 $(SEQ_GPU) -O0 -o process_sequential.X  process_sequential.cpp $(LIB_CIMG) $(DO_NETCDF) $(LIB_XWINDOWS)  $(DO_GPU) $(DO_GPU_PROFILING) $(DO_PROFILING) && ./process_sequential.X -h -I && ./process_sequential.X -v > VERSION
+
 	./process_sequential -h 2> process_sequential_help.output
 process_sequentialX: process_sequential.cpp $(SRC_DATA_BUFFER) CDataGenerator.hpp $(SRC_DATA_PROCESS) CDataStore.hpp $(SRC_NETCDF)
 	g++ $(SEQ_GPU) -O0 -o process_sequential.X  process_sequential.cpp $(LIB_CIMG) $(DO_NETCDF) $(LIB_XWINDOWS)  $(DO_GPU) && ./process_sequential.X -h -I && ./process_sequential.X -v > VERSION
@@ -86,7 +97,7 @@ send: send.cpp SDataTypes.hpp $(SRC_DATA_BUFFER) $(SRC_DATA_GENERATOR) CDataSend
 	./send -h 2> send_help.output
 
 receive: receive.cpp SDataTypes.hpp $(SRC_DATA_BUFFER) CDataReceive.hpp $(SRC_DATA_PROCESS) CDataStore.hpp
-	g++ -O0 -o receive receive.cpp  $(LIB_CIMG) $(LIB_BOOST_ASIO) $(DO_NETCDF) -Dcimg_display=0 $(DO_GPU) && ./receive -h -I && ./receive -v > VERSION
+	g++ -O0 -o receive receive.cpp  $(LIB_CIMG) $(LIB_BOOST_ASIO) $(DO_NETCDF) -Dcimg_display=0 $(DO_GPU) $(DO_GPU_PROFILING) && ./receive -h -I && ./receive -v > VERSION
 	./receive -h 2> receive_help.output
 
 doc: doxygen.sh Doxyfile.template doxygen.cpp VERSION VERSIONS $(HELP_OUTPUT) process.cpp process_sequential.cpp send.cpp receive.cpp  $(SRC_DATA_BUFFER) CDataReceive.hpp $(SRC_DATA_GENERATOR) $(SRC_DATA_PROCESS) CDataStore.hpp
@@ -110,7 +121,8 @@ process_run:
 #	./process -c $(NT) -s $(FRAME_SIZE) -o sample.cimg --generator-factory $(GEN_FCT) --CPU-factory $(PROC) $(USE_GPU) -b $(NB) -n $(NS) $(DO_CHECK) # 2>&1 | grep -e info -e test -e failed -e double -e fault -e $(GEN_FCT) -e $(PROC) --color
 
 process_sequential_run:
-	ncgen parameters.cdl -o parameters.nc && rm sample_sequential.nc; ./process_sequential   -s $(FRAME_SIZE) -o sample_sequential.nc -r result_sequential.nc --generator-factory $(GEN_FCT) --CPU-factory $(PROC) -n 12 $(USE_GPU) $(DO_CHECK) && ncdump -h sample_sequential.nc && ncdump -h result_sequential.nc && ncrename -v signal,process -d dimS,dimR result_sequential.nc && cp -p  sample_sequential.nc  all_sequential.nc && ncks -A result_sequential.nc -o all_sequential.nc && ncdump -h all_sequential.nc && ncdump pac_signal_parameters.nc && ncview all_sequential.nc 
+	ncgen parameters.cdl -o parameters.nc && rm -f sample_sequential.nc result_sequential.nc; ./process_sequential   -s $(FRAME_SIZE) -o sample_sequential.nc -r result_sequential.nc --generator-factory $(GEN_FCT) --CPU-factory $(PROC) -n 1234 $(USE_GPU) $(DO_CHECK) && ncdump -h sample_sequential.nc && ncdump -h result_sequential.nc && ncdump -h profiling_gpu.nc && ncdump -h profiling_process.nc #&& ncview sample_sequential.nc
+
 process_sequentialX_run:
 	ncgen parameters.cdl -o parameters.nc && rm sample_sequential.nc; ./process_sequential.X -s $(FRAME_SIZE) -o sample_sequential.nc -r result_sequential.nc --generator-factory $(GEN_FCT) --CPU-factory $(PROC) -n 12 $(USE_GPU) $(DO_CHECK) --show && ncdump -h sample_sequential.nc
 

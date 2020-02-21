@@ -55,7 +55,7 @@ public:
   )
   : CDataProcessorGPU<Tdata,Tproc, Taccess>(lock,device,VECTOR_SIZE,wait_status,set_status,wait_statusR,set_statusR,do_check)
   {
-    this->debug=true;
+//    this->debug=true;
     this->class_name="CDataProcessorGPU_discri_opencl";
     this->check_locks(lock);
     ///read paramaters in NetCDF file
@@ -184,7 +184,7 @@ public:
   : CDataProcessorGPU_discri_opencl<Tdata,Tproc, Taccess>(lock,device,VECTOR_SIZE,wait_status,set_status,wait_statusR,set_statusR,do_check)
    ,device_vector_in2(VECTOR_SIZE/2, this->ctx),device_vector_out2(VECTOR_SIZE/2, this->ctx)
   {
-    this->debug=true;
+//    this->debug=true;
     this->class_name="CDataProcessorGPU_discri_opencl_int2";
     this->check_locks(lock);
     //OpenCL frameworkS
@@ -309,7 +309,7 @@ public:
   : CDataProcessorGPU_discri_opencl<Tdata,Tproc, Taccess>(lock,device,VECTOR_SIZE,wait_status,set_status,wait_statusR,set_statusR,do_check)
    ,device_vector_in4(VECTOR_SIZE/4, this->ctx),device_vector_out4(VECTOR_SIZE/4, this->ctx)
   {
-    this->debug=true;
+//    this->debug=true;
     this->class_name="CDataProcessorGPU_discri_opencl_int4";
     this->check_locks(lock);
     //OpenCL framework

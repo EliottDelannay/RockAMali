@@ -5,11 +5,21 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#ifdef DO_PROFILING
+//std::chrono
+#include <ctime>
+#include <ratio>
+#include <chrono>
+#ifdef DO_NETCDF
+#include "CImg_NetCDF.h"
+#endif //DO_NETCDF
+#endif //DO_PROFILING
 
 //OpenMP
 #include <omp.h>
 
-#define VERSION "v0.6.3d"
+#define VERSION "v0.6.3p"
+
 
 //thread lock
 #include "CDataGenerator_factory.hpp"
@@ -242,6 +252,35 @@ int main(int argc,char **argv)
      //stores
       CDataStore<Tdata,Taccess> store(locks,    imagefilename,digit, CDataAccess::STATUS_PROCESSED);
       CDataStore<Tproc,Taccess> storeR(locksR, resultfilename,digit, CDataAccess::STATUS_FILLED);
+#ifdef DO_PROFILING
+#ifdef DO_NETCDF
+    std::string file_name="profiling_process.nc";
+    CImgListNetCDF<Tnetcdf> nc;
+    CImgList<Tnetcdf> nc_img;//temporary image for type conversion
+    //dimension names
+    std::vector<std::string> dim_names;
+    std::string dim_time;
+    //variable names (and its unit)
+    std::vector<std::string> var_names;
+    std::vector<std::string> unit_names;
+    nc_img.assign(2, 1,1,1,1, -99);
+    std::cout << "CImgListNetCDF::saveNetCDFFile(" << file_name << ",...) return " << nc.saveNetCDFFile((char*)file_name.c_str()) << std::endl;
+    dim_time="dimF";
+    dim_names.push_back("dim1");
+    std::cout << "CImgListNetCDF::addNetCDFDims(" << file_name << ",...) return " << nc.addNetCDFDims(nc_img,dim_names,dim_time) << std::endl<<std::flush;
+    //variable names (and its unit)
+    var_names.push_back("iteration");
+    var_names.push_back("storage");
+    unit_names.push_back("us");
+    unit_names.push_back("us");
+std::cout << "CImgListNetCDF::addNetCDFVar(" << file_name << ",...) return " << nc.addNetCDFVar(nc_img,var_names,unit_names) << std::endl<<std::flush;
+    if (!(nc.pNCvars[0]->add_att("kernel",process->class_name.c_str()))) std::cerr<<"error: for profiling in NetCDF, while adding kernel name attribute (NC_ERROR)."<<std::endl;
+    if (!(nc.pNCvars[0]->add_att("frame_size",width))) std::cerr<<"error: for profiling in NetCDF, while adding storage size name attribute (NC_ERROR)."<<std::endl;
+    if (!(nc.pNCvars[1]->add_att("storage",store.class_name.c_str()))) std::cerr<<"error: for profiling in NetCDF, while adding storage name attribute (NC_ERROR)."<<std::endl;
+    if (!(nc.pNCvars[1]->add_att("frame_size",width))) std::cerr<<"error: for profiling in NetCDF, while adding storage size name attribute (NC_ERROR)."<<std::endl;
+#endif //DO_NETCDF
+#endif //DO_PROFILING
+
       //run
       for(unsigned int i=0;i<count;++i)
       {
@@ -250,12 +289,31 @@ int main(int argc,char **argv)
         #if cimg_display!=0   
          if(show) images[0].display_graph(generator_type.c_str());
         #endif
- 	std::cout<< process->class_name<<std::endl; //return CDataProcessor_Max_Min
-	std::cout<< generate->class_name<<std::endl;//return CDataGenerator"name of generator"  example : CDataGenerator_Peak_Noise	
-        
+#ifdef DO_PROFILING
+       cimg::tic();
+       std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+#endif //DO_PROFILING
         process->iteration(access,images, accessR,results, 0,i);
+#ifdef DO_PROFILING
+       std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+       cimg::toc();
+       std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
+       std::cout << "iteration elapsed time=" << time_span.count()*1000 << " ms.";
+       nc_img(0)(0)=time_span.count()*1000000;//us
+       cimg::tic();
+       t1 = std::chrono::high_resolution_clock::now();
+#endif //DO_PROFILING
         store.iteration(access,images, 0,i);
         storeR.iteration(accessR,results, 0,i);
+#ifdef DO_PROFILING
+       t2 = std::chrono::high_resolution_clock::now();
+       cimg::toc();
+       time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
+       std::cout << "storage elapsed time=" << time_span.count()*1000 << " ms.";
+       nc_img(1)(0)=time_span.count()*1000000;//us
+//        std::cout<<"timing: elapsed for process="<<tp<<" ms, store frame="<<ts<<" ms, store result="<<tr<<" ms.";
+       std::cout << "CImgListNetCDF::addNetCDFData(" << file_name << ",...) return " << nc.addNetCDFData(nc_img) << std::endl;
+#endif //DO_PROFILING
         //check
         if(do_check)
         {
@@ -281,6 +339,16 @@ int main(int argc,char **argv)
       gen->nc.pNCFile->close();
       }
       #endif //DO_NETCDF
+#ifdef DO_GPU_PROFILING
+#ifdef DO_NETCDF
+//! \bug [GPU_PROFILING and NetCDF] force close of file ?!
+      if(use_GPU)
+      {
+        CDataProcessorGPU<Tdata,Tproc, Taccess>*gpuprocess=(CDataProcessorGPU<Tdata,Tproc, Taccess>*)process;
+        gpuprocess->nc.pNCFile->close();
+      }//use_GPU
+#endif //DO_NETCDF
+#endif //DO_GPU_PROFILING
       break;
     }//sequential
   }//switch(id)
