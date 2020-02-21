@@ -312,7 +312,7 @@ std::cout << "CImgListNetCDF::addNetCDFVar(" << file_name << ",...) return " << 
        std::cout << "storage elapsed time=" << time_span.count()*1000 << " ms.";
        nc_img(1)(0)=time_span.count()*1000000;//us
 //        std::cout<<"timing: elapsed for process="<<tp<<" ms, store frame="<<ts<<" ms, store result="<<tr<<" ms.";
-       std::cout << "CImgNetCDF::addNetCDFData(" << file_name << ",...) return " << nc.addNetCDFData(nc_img) << std::endl;
+       std::cout << "CImgListNetCDF::addNetCDFData(" << file_name << ",...) return " << nc.addNetCDFData(nc_img) << std::endl;
 #endif //DO_PROFILING
         //check
         if(do_check)
