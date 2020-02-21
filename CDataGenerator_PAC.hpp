@@ -145,6 +145,9 @@ public:
   unit_names.push_back("tic (10ns)");
   unit_names.push_back("tic (10ns)");
 std::cout << "CImgListNetCDF::addNetCDFVar(" << file_name << ",...) return " << nc.addNetCDFVar(nc_img,var_names,unit_names) << std::endl<<std::flush;
+
+   cimglist_for (nc_img,x)if (!(this->nc.pNCvars[x]->add_att("generator_",this->class_name.c_str()))) std::cerr<<"error: for profiling in NetCDF, while adding kernel name attribute"<<this->class_name<<" (NC_ERROR)."<<std::endl;
+
 //! todo add other parameters
 #endif //DO_NETCDF
   }//constructor
@@ -434,19 +437,19 @@ public:
     this->nb_tA+=this->nb_tB;
     std::cout<<"nb_tA+nb_tB = "<<this->nb_tA<<std::endl;
 #ifdef DO_NETCDF
-/*
-    if(!this->is_netcdf_init)
+
+    if(!(this->is_netcdf_init))
     {
       //add class name in NetCDF profiling file
-      if (!(this->nc.pNCvar->add_att("generator",this->class_name.c_str()))) std::cerr<<"error: for profiling in NetCDF, while adding kernel name attribute"<<this->class_name<<" (NC_ERROR)."<<std::endl;
+     cimglist_for (this->nc_img,x)if (!(this->nc.pNCvars[x]->add_att("generator",this->class_name.c_str()))) std::cerr<<"error: for profiling in NetCDF, while adding kernel name attribute"<<this->class_name<<" (NC_ERROR)."<<std::endl;
       this->is_netcdf_init=true;
     }//!is_netcdf_init
-*/
+
     //add data to NetCDF profiling file
     this->nc_img(0)(0)=this->A;
     this->nc_img(1)(0)=this->tau;
     this->nc_img(2)(0)=this->nb_tB;
-std::cout << "CImgListNetCDF::addNetCDFData(" << this->file_name << ",...) return " << this->nc.addNetCDFData(this->nc_img) << std::endl;
+    std::cout << "CImgListNetCDF::addNetCDFData(" << this->file_name << ",...) return " << this->nc.addNetCDFData(this->nc_img) << std::endl;
 #endif //DO_NETCDF
      //noise
     if(index ==0)this->Random.assign(images[n].width());

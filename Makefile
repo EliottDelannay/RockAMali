@@ -3,7 +3,7 @@
 ## uint   = 4uchar: 2048*2 = 8192BoF
 FRAME_SIZE=4096
 NP=4
-GEN_FCT=signal_pac
+GEN_FCT=full_random
 PROC=filter
 USE_GPU=--use-GPU --GPU-factory discri
 #USE_GPU=
